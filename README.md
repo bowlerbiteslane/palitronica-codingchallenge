@@ -8,8 +8,10 @@ git clone https://github.com/ecurrah/palitronica-codingchallenge.git
 ```
 
 2. Docker Compose
+```
 cd {project_root}
 docker-compose up
+```
 
 # Clone and Run Locally
 
@@ -36,4 +38,9 @@ cd {project_root}/api
 npm install
 npm start
 ```
+Note: to connect to local standalone mongodb instance you will need to update the connection string in /api/db/index.js to reference "localhost" as the host rather than the "mongodb" container name
 
+# Run MongoDB as Standalone
+```
+docker-compose -f ./docker-compose-dbonly.yml up
+```
