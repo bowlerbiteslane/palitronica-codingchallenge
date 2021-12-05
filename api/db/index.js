@@ -4,7 +4,7 @@ const { Customer, Item, DBStatus } = require('./models');
 // Connecting to MongoDB
 console.log('Connecting to MongoDB');
 // need to update below for running mongodb standalone
-mongoose.connect('mongodb://localhost:27017/palitronica')
+mongoose.connect(`mongodb://${process.env.DB_HOST}:27017/palitronica`)
 .then(() => {console.log('Intializing DB'); initialize();})
 .catch(error => console.log('Could not connect to MongoDB server.'));
 

@@ -22,14 +22,16 @@ router.post('/', async (req, res) => {
   console.log("Customer:", customer);
 
   // Get Item information from DB
+  const validItems = items.filter(item => item.quantity > 0);
+
   const dbItems = await Item.find()
       .where('id')
-      .in(items.map(item => item.id));
+      .in(validItems.map(item => item.id));
 
   console.log("DB Items", dbItems);
 
   // Determine Item Totals
-  const itemTotals = items.map(item => {
+  const itemTotals = validItems.map(item => {
     const itemPrice = dbItems.find(dbItem => dbItem.id === item.id).price;
     const itemTotal = itemPrice * item.quantity;
     return {
@@ -40,8 +42,8 @@ router.post('/', async (req, res) => {
       }
   });
   console.log("Item Totals: ", itemTotals);
-    
-  const itemTotalValue = itemTotals.map(item => item.total).reduce((prev, current) => prev + current);
+  
+  const itemTotalValue = itemTotals.length > 0 ? itemTotals.map(item => item.total).reduce((prev, current) => prev + current) : 0;
 
   //calculate tax 
   let taxRate = 0.0;

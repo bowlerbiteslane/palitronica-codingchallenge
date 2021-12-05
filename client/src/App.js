@@ -44,7 +44,7 @@ function App() {
     };
 
     // call api for calculation
-    fetch('http://localhost:9000/calculate', {
+    fetch(`${process.env.REACT_APP_API_URL}/calculate`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

@@ -13,6 +13,8 @@ cd {project_root}
 docker-compose up
 ```
 
+3. Navigate to http://localhost:3000 
+
 # Clone and Run Locally
 
 0. Requirements
@@ -38,7 +40,8 @@ cd {project_root}/api
 npm install
 npm start
 ```
-Note: to connect to local standalone mongodb instance you will need to update the connection string in /api/db/index.js to reference "localhost" as the host rather than the "mongodb" container name
+Note: 
+Update /api/.env to connect to local mongodb instance (reference "localhost" as the host rather than "mongodb" container name)
 
 # Run MongoDB as Standalone
 ```

@@ -8,10 +8,7 @@ var cors = require('cors');
 require('dotenv').config();
 require('./db/index'); // initializes the db connection
 
-
-var indexRouter = require('./routes/index');
 var calcRouter = require('./routes/calculate');
-var usersRouter = require('./routes/users');
 var testAPIRouter = require('./routes/testApi');
 var testDBRouter = require('./routes/testDB');
 
@@ -28,9 +25,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-app.use('/', indexRouter);
 app.use('/calculate', calcRouter);
-app.use('/users', usersRouter);
 app.use('/testAPI', testAPIRouter);
 app.use('/testDB', testDBRouter);
 
