@@ -49,6 +49,7 @@ router.post('/', async (req, res) => {
     return {
         id: item.id, 
         name: dbItem.name, 
+        price: dbItem.price,
         quantity: item.quantity, 
         total: itemTotal
       }

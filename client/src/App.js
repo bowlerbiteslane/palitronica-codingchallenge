@@ -7,7 +7,6 @@ import CalcReview from './CalcReview';
 import CssBaseline from '@mui/material/CssBaseline';
 import AppBar from '@mui/material/AppBar';
 import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
@@ -22,9 +21,9 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function App() {
   const defaultItems = [
-    {id: '1', name: 'Shampoo', quantity: 0},
-    {id: '2', name: 'Body Wash', quantity: 0},
-    {id: '3', name:'Toothbrush', quantity: 0}
+    {id: '1', name: 'Shampoo', price:5.99, quantity: 0},
+    {id: '2', name: 'Body Wash', price: 8.99, quantity: 0},
+    {id: '3', name:'Toothbrush', price: 7, quantity: 0}
   ];
 
   const defaultCalcResponse = { custName: "", itemTotals: [], subtotal: 0, totalTax: 0, total: 0, success: true };

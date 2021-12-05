@@ -1,3 +1,6 @@
+# Info
+Valid Customer IDs: 1,2,3
+
 # Download and run from DockerHub (recommended)
 0. Requirements
 - Docker Desktop v4.2.0+
@@ -10,7 +13,7 @@ git clone https://github.com/ecurrah/palitronica-codingchallenge.git
 2. Docker Compose Set-up
 ```
 cd {project_root}
-docker-compose build
+docker-compose pull
 docker-compose up
 ```
 

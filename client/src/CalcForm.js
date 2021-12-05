@@ -44,8 +44,7 @@ const CalcForm = ({custId, items, setCustId, setItems}) => {
                                 return (
                                     <ListItem key={inputItemKey} sx={{ py: 2, px: 0 }}>
                                         <Grid item xs={6}>
-                                            <ListItemText primary={`Item ${item.id}`} secondary={item.name}/>
-                                            <Typography variant="body2">{item.price}</Typography>
+                                            <ListItemText primary={item.name} secondary={`Item ${item.id} - $${item.price.toFixed(2)}`}/>
                                         </Grid>
                                         <Grid item xs={6}>
                                             <TextField

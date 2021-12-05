@@ -25,12 +25,12 @@ const CalcReview = ({calcResponse}) => {
                 {
                     itemTotals.length > 0 &&
                     itemTotals.map((itemTotal) => {
-                        const { id, total, name, quantity} = itemTotal;
+                        const { id, total, name, price, quantity} = itemTotal;
                         const respItemKey = `item-${id}-total`;
                         
                         return (
                             <ListItem key={respItemKey} sx={{ py: -1, px: 0 }}>
-                                <ListItemText primary={`${name} x ${quantity}`} secondary={`Item ${id}`} />
+                                <ListItemText primary={`${name} x ${quantity}`} secondary={`Item ${id} - $${price}`} />
                                 <Typography variant="body2">{`$${total.toFixed(2)}`}</Typography>
                             </ListItem>
                         )
