@@ -1,6 +1,25 @@
 import React, { useState } from 'react';
 import './App.css';
 
+import CalcForm from './CalcForm';
+import CalcReview from './CalcReview';
+
+import CssBaseline from '@mui/material/CssBaseline';
+import AppBar from '@mui/material/AppBar';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Toolbar from '@mui/material/Toolbar';
+import Paper from '@mui/material/Paper';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 function App() {
   const defaultItems = [
     {id: '1', name: 'Shampoo', quantity: 0},
@@ -8,148 +27,169 @@ function App() {
     {id: '3', name:'Toothbrush', quantity: 0}
   ];
 
-  const [apiResponse, setApiResponse] = useState();
-  const [apiDbResponse, setApiDbResponse] = useState();
+  const defaultCalcResponse = { custName: "", itemTotals: [], subtotal: 0, totalTax: 0, total: 0, success: true };
+
   const [items, setItems] = useState(defaultItems);
   const [custId, setCustId] = useState("1");
-  const [calcResponse, setCalcResponse] = useState();
+  const [calcResponse, setCalcResponse] = useState(defaultCalcResponse);
+  const [activeStep, setActiveStep] = useState(0);
 
+  const theme = createTheme();
 
-  const callAPI = () => {
-    fetch("http://localhost:9000/testAPI")
-      .then(res => res.text())
-      .then(res => setApiResponse(res))
-      .catch(ex => console.log(ex));
+  const handleNext = async () => {
+    if(activeStep === 0){
+      const success = await calculate();
+      if(success){
+        setActiveStep(activeStep + 1);
+      }
+    } else{
+      setActiveStep(activeStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep(activeStep - 1);
+  };
+
+  function Copyright() {
+    return (
+      <Typography variant="body2" color="text.secondary" align="center">
+        {'Copyright © '}
+        <Link color="inherit" href="https://github.com/ecurrah/palitronica-codingchallenge">
+          Palitronica Coding Challenge
+        </Link>{' '}
+        {new Date().getFullYear()}
+        {'.'}
+      </Typography>
+    );
   }
 
-  const callAPIDb = () => {
-    fetch("http://localhost:9000/testDB")
-      .then(res => res.text())
-      .then(res => setApiDbResponse(res))
-      .catch(ex => console.log(ex));
+  const steps = ['Order', 'Review'];
+
+  const getStepContent = (step) => {
+    switch(step) {
+      case 0:
+        return <CalcForm custId={custId} items={items} setItems={setItems} setCustId={setCustId} />
+      case 1:
+        return <CalcReview calcResponse={calcResponse} />
+      default:
+        throw new Error('Unknown step')
+    }
   }
 
-  const updateItemQuantity = (itemId, value) => {
-    const itemsToUpdate = [...items];
-    itemsToUpdate.find(item => item.id === itemId).quantity = value;
-    setItems([...itemsToUpdate]);
-  }
-
-  const calculate = (e) => {
-    e.preventDefault();
+  const calculate = async () => {
+    
+    const orderedItems = items.filter(item => item.quantity > 0);
+    if(orderedItems.length < 1){
+      setCalcResponse({success:false, message: 'Set the quantity of at least one item to be greater than zero to place your order.'})
+      return false;
+    }
 
     const req = {
       custId: custId,
-      items: items
+      items: orderedItems.map(item => { return {id: item.id, quantity: item.quantity}}) // send only required information
     };
 
-    // call api for calculation
-    fetch(`${process.env.REACT_APP_API_URL}/calculate`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(req)
-    })
-    .then(res => res.json())
-    .then(res => {
-      console.log(res);
-      setCalcResponse({...res, success:true})
-    })
-    .catch(err => {
+    let res;
+    let success = false;
+    try {
+      setCalcResponse(defaultCalcResponse);
+      // call api for calculation
+      res = await fetch(`${process.env.REACT_APP_API_URL}/calculate`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(req)
+      });
+      success = res.status === 200;
+      const resJson = await res.json();
+      setCalcResponse({...resJson, success});
+      return success;
+    } catch (err){
       console.log('API Request Error: ', err);
       setCalcResponse({success:false, message: 'Error occured while trying to perform calculation request.'})
-    })
-
-    // const res = {
-    //   success: true,
-    //   custName: 'John Doe',
-    //   itemTotals: [
-    //     {id: '1', name: 'Shampoo', quantity: 2, total: 11.98},
-    //     {id: '2', name: 'Body Wash', quantity: 1, total: 8.99},
-    //     {id: '3', name: 'ToothBrush', quantity: 4, total: 21}
-    //   ],
-    //   totalTax: 6.29,
-    //   total: 48.27
-    // }
+      return false;
+    }
   }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <form onSubmit={calculate}>
-          <label>Customer ID </label>
-          <input type="text" name="custId" value={custId} onChange={e => setCustId(e.target.value)} />
-          <br/>
-          {
-            items.map(item => {
-              let inputItemKey = `item-${item.id}-quantity`;
-              return (
-              <React.Fragment key={inputItemKey}>
-              <label>{`${item.id} - ${item.name}`} </label>
-              <input id={inputItemKey} type="number" value={item.quantity} onChange={e => updateItemQuantity(item.id, e.target.value)} />
-              <br/>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppBar
+        position="absolute"
+        color="default"
+        elevation={0}
+        sx={{
+          position: 'relative',
+          borderBottom: (t) => `1px solid ${t.palette.divider}`,
+        }}
+      >
+        <Toolbar>
+          <Typography variant="h6" color="inherit" noWrap>
+            Palitronica
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container component="main" maxWidth="sm" sx={{ mb: 4 }}>
+        <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
+          <Typography component="h1" variant="h4" align="center">
+            Checkout
+          </Typography>
+          <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 5 }}>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+          <React.Fragment>
+            {activeStep === steps.length ? (
+              <React.Fragment>
+                <Typography variant="h5" gutterBottom>
+                  Thank you for your order.
+                </Typography>
+                <Typography variant="subtitle1">
+                  We will send you an update when your order has
+                  shipped.
+                </Typography>
+                <Button onClick={handleBack} sx={{ mt: 3, ml: 1 }}>
+                  Back
+                </Button>
               </React.Fragment>
-              )
-            })
-          }
-        <input type="submit" />
-        </form>
-        <div>
-          {
-            calcResponse &&
-            !calcResponse.success &&
-            (
-              <>
-              <p>{calcResponse.message}</p>
-              <input type='button' value='Test Connection' onClick={e => {e.preventDefault(); callAPI(); callAPIDb();}} />
-              <div>
-                {apiResponse}
-              </div>
-              <div>
-                {apiDbResponse}
-              </div>
-              </>
-            )
-          }
-        </div>
-        <div>
-          {
-            calcResponse &&
-            calcResponse.success &&
-            (
-            <>
-              <label>Customer Name: </label>
-              <input type='text' disabled={true} value={calcResponse.custName} />
-              <br/>
-              {
-                calcResponse.itemTotals &&
-                calcResponse.itemTotals.map(itemTotal => {
-                  const respItemKey = `item-${itemTotal.id}-total`;
-                  return (
-                    <React.Fragment key={respItemKey}>
-                      <label>{`${itemTotal.id} - ${itemTotal.name} x ${itemTotal.quantity}`} </label>
-                      <input id={respItemKey} type='text' name={respItemKey} value={`$${itemTotal.total.toFixed(2)}`} disabled={true} />
-                      <br/>
-                    </React.Fragment>
-                  )
-                })
-              }
-              <label>Subtotal: </label>
-              <input type='text' disabled={true} value={`$${calcResponse.subTotal}`} />
-              <br/>
-              <label>Taxes: </label>
-              <input type='text' disabled={true} value={`$${calcResponse.totalTax}`} />
-              <br/>
-              <label>Total: </label>
-              <input type='text' disabled={true} value={`$${calcResponse.total}`} />
-            </>
-            )
-          }
-        </div>
-      </header>
-    </div>
+            ) : (
+              <React.Fragment>
+                {getStepContent(activeStep)}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  {activeStep !== 0 && (
+                    <Button onClick={handleBack} sx={{ mt: 3, ml: 1 }}>
+                      Back
+                    </Button>
+                  )}
+                  {
+                    !calcResponse.success &&
+                    (
+                      <Alert severity="error">
+                        {calcResponse.message}
+                      </Alert>
+                    )
+                  }
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                    sx={{ mt: 3, ml: 1 }}
+                  >
+                    {activeStep === steps.length - 1 ? 'Place order' : 'Next'}
+                  </Button>
+                </Box>
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        </Paper>
+        <Copyright />
+      </Container>
+    </ThemeProvider>
   );
 }
 

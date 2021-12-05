@@ -9,8 +9,6 @@ require('dotenv').config();
 require('./db/index'); // initializes the db connection
 
 var calcRouter = require('./routes/calculate');
-var testAPIRouter = require('./routes/testApi');
-var testDBRouter = require('./routes/testDB');
 
 var app = express();
 
@@ -26,8 +24,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 app.use('/calculate', calcRouter);
-app.use('/testAPI', testAPIRouter);
-app.use('/testDB', testDBRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

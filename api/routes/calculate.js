@@ -18,7 +18,18 @@ router.post('/', async (req, res) => {
   } = req.body;
 
   // Get Customer information from DB
-  const customer = await Customer.findOne({id: custId});
+  let customer;
+  try{
+    customer = await Customer.findOne({id: custId});
+  } catch (error){
+    console.log(error);
+    res.status(500).send(`Could not find customer with ID: ${custId}`);
+    return;
+  }
+  if(!customer){
+    res.status(500).send({message: `Could not find customer with ID: ${custId}`});
+    return;
+  }
   console.log("Customer:", customer);
 
   // Get Item information from DB
@@ -28,20 +39,21 @@ router.post('/', async (req, res) => {
       .where('id')
       .in(validItems.map(item => item.id));
 
-  console.log("DB Items", dbItems);
+  //console.log("DB Items", dbItems);
 
   // Determine Item Totals
   const itemTotals = validItems.map(item => {
-    const itemPrice = dbItems.find(dbItem => dbItem.id === item.id).price;
-    const itemTotal = itemPrice * item.quantity;
+    const dbItem = dbItems.find(dbItem => dbItem.id === item.id);
+    const itemTotal = Math.round((dbItem.price * item.quantity) * 100) / 100; // round to nearest penny
+    console.log(itemTotal)
     return {
         id: item.id, 
-        name: item.name, 
+        name: dbItem.name, 
         quantity: item.quantity, 
-        total: parseInt(itemTotal.toFixed(2))
+        total: itemTotal
       }
   });
-  console.log("Item Totals: ", itemTotals);
+  //console.log("Item Totals: ", itemTotals);
   
   const itemTotalValue = itemTotals.length > 0 ? itemTotals.map(item => item.total).reduce((prev, current) => prev + current) : 0;
 
@@ -53,23 +65,32 @@ router.post('/', async (req, res) => {
       state: customer.state,
       country: customer.country
     });
-  } catch(error){
+  } catch(error) {
     console.log(error);
+    res.status(500).send("Failed to calculate rates.");
+    return;
   }
 
-  console.log(taxRate);
-  const totalTax = itemTotalValue * taxRate.rate.combined_rate;
+  //console.log(taxRate);
+  const totalTax = Math.round((itemTotalValue * taxRate.rate.combined_rate) * 100) / 100; // round to nearest penny
   
   // calculate overall total
   const total = itemTotalValue + totalTax;
   
   const calculateRes = {
     success: true,
-    custName: customer.name,
+    customer: {
+      id: customer.id,
+      name: customer.name,
+      postal_code: customer.postal_code,
+      city: customer.city,
+      state: customer.state,
+      country: customer.country
+    },
     itemTotals: itemTotals,
-    subTotal: itemTotalValue.toFixed(2),
-    totalTax: totalTax.toFixed(2),
-    total: total.toFixed(2)
+    subTotal: itemTotalValue,
+    totalTax: totalTax,
+    total: total
   }
   console.log("calculateRes", calculateRes);
   res.send(calculateRes);

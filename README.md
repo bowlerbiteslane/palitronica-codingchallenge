@@ -7,13 +7,20 @@
 git clone https://github.com/ecurrah/palitronica-codingchallenge.git
 ```
 
-2. Docker Compose
+2. Docker Compose Set-up
 ```
 cd {project_root}
+docker-compose build
 docker-compose up
 ```
 
 3. Navigate to http://localhost:3000 
+
+4. Docker Compose Tear-down
+```
+cd {project_root}
+docker-compose down
+```
 
 # Clone and Run Locally
 
